@@ -24,6 +24,32 @@
 .DS_Store
 *.pem
 
+# AI tool configs (local only)
+.agents
+.claude
+.codebuddy
+.commandcode
+.continue
+.crush
+.factory
+.goose
+.junie
+.kilocode
+.kiro
+.kode
+.mcpjam
+.mux
+.neovate
+.openhands
+.pi
+.pochi
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
+.zencoder
+
 # debug
 npm-debug.log*
 yarn-debug.log*

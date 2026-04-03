@@ -32,7 +32,7 @@ lib/
   r2-storage.ts    R2 helpers (optional)
   utils.ts         cn(), formatDate(), formatCurrency()
 types/index.ts     SubscriptionTier, SubscriptionStatus, UserRecord
-middleware.ts      Route protection via clerkMiddleware
+proxy.ts           Route protection via clerkMiddleware (Next.js 16 replaces middleware.ts)
 ```
 
 ## Environment Variables Required
@@ -57,3 +57,11 @@ Protected by: middleware (primary) + `(admin)/layout.tsx` redirect (defence in d
 
 ## Setup
 See `GET-STARTED.md` for full step-by-step instructions.
+
+<!-- convex-ai-start -->
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read `convex/_generated/ai/guidelines.md` first** for important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
+<!-- convex-ai-end -->

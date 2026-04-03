@@ -39,8 +39,8 @@ cp .env.local.example .env.local
 
 **JWT Template (critical — easy to miss):**
 
-5. In Clerk Dashboard → **JWT Templates** → New template → choose **Convex** preset
-6. Note the **Issuer** URL shown (looks like `https://alert-shrew-70.clerk.accounts.dev`) → `CLERK_JWT_ISSUER_DOMAIN`
+5. In Clerk Dashboard → Configure → Sesions → **JWT Templates** → Add new template → choose **Convex** preset
+6. Copy the **Issuer** URL shown (looks like `https://alert-shrew-70.clerk.accounts.dev`) → `CLERK_JWT_ISSUER_DOMAIN`
 
 > **Gotcha:** JWT templates are per-environment. If your app uses the Development Clerk instance (it does during local dev), create the JWT template in the **Development** environment. When you deploy to production, create it again in the **Production** environment with the production issuer URL.
 
@@ -60,6 +60,8 @@ npx convex dev
 
 This will:
 - Prompt you to log in / create a project
+- Use cloud dev deployment
+- Say N to the AI files prompt. This injects the same convex skills into every AI tool's config folder on your machine — .agents, .claude, .codebuddy, .commandcode etc
 - Deploy your schema and functions
 - Output `NEXT_PUBLIC_CONVEX_URL` → copy to `.env.local`
 - Warn if `CLERK_JWT_ISSUER_DOMAIN` is not set in Convex env vars
@@ -75,7 +77,7 @@ Leave `npx convex dev` running in a terminal throughout development.
 
 ## Step 4 — Stripe products
 
-1. In Stripe Dashboard → Products → Add product
+1. In Stripe Dashboard → Create a New Account → Product catalog → Add product
 
 Create these products (or adapt to your pricing):
 
