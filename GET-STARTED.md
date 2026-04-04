@@ -50,6 +50,17 @@ To grant admin access to a user:
 1. Clerk Dashboard → Users → select user → Metadata tab
 2. Set **Public metadata**: `{ "role": "admin" }`
 
+**Expose metadata to the session token (required for admin routes):**
+
+3. Clerk Dashboard → Configure → Sessions → **Customize session token**
+4. Add the following claim and save:
+```json
+{ "metadata": "{{user.public_metadata}}" }
+```
+5. Sign out and back in — the middleware reads this claim to protect `/admin`
+
+> Without this, `sessionClaims.metadata` is always `undefined` and the admin check will always redirect to `/dashboard` even with the correct public metadata set.
+
 ---
 
 ## Step 3 — Convex setup
