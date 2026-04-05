@@ -106,6 +106,27 @@ export const updateLastActive = mutation({
   },
 });
 
+/**
+ * Delete the current user's own record.
+ * Called client-side during account deletion — Stripe and Clerk deletion
+ * are handled separately (API route for Stripe, user.delete() for Clerk).
+ */
+export const deleteMyUser = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkUserId", identity.subject))
+      .first();
+
+    if (!user) return; // already gone
+    await ctx.db.delete(user._id);
+  },
+});
+
 // ─── Server-side queries (called from API routes via ConvexHttpClient) ────────
 
 /**

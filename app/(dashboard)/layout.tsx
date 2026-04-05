@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
 import { AppStateProvider } from "@/app/components/AppStateProvider";
 import { ThemeToggle } from "@/app/components/shared/ui/ThemeToggle";
+import { UserMenu } from "@/app/components/dashboard/ui/UserMenu";
 import { LayoutDashboard, Settings } from "lucide-react";
 
 const navLinks = [
@@ -40,7 +40,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex-1" />
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <UserButton />
+              <UserMenu />
             </div>
           </header>
 

@@ -48,7 +48,7 @@
 @theme inline {
   /* Brand */
   --color-primary: rgb(var(--primary));
-  --color-primary-foreground: rgb(var(--primary-foreground));
+  --color-primary-foreground: rgb(var(--primary-foreground));   
 
   /* Surfaces */
   --color-background: rgb(var(--background));

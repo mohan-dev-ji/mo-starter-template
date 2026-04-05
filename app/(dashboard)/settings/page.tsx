@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useAppState } from "@/app/components/AppStateProvider";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/app/components/shared/ui/Card";
+import Link from "next/link";
 import { CardSkeleton } from "@/app/components/shared/ui/Skeleton";
 import { ThemeToggle } from "@/app/components/shared/ui/ThemeToggle";
-import { SubscriptionBadge } from "@/app/components/dashboard/ui/SubscriptionBadge";
 import { UpgradeButton } from "@/app/components/dashboard/ui/UpgradeButton";
 import { PricingToggle } from "@/app/components/marketing/ui/PricingToggle";
 import { Button } from "@/app/components/shared/ui/Button";
@@ -57,12 +57,9 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Profile</CardTitle>
-          <CardDescription>
-            Profile details are managed via Clerk. Click your avatar to update.
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <dl className="space-y-3">
+          <dl className="space-y-3 mb-4 border-b border-border pb-4">
             <div className="flex justify-between text-small">
               <dt className="text-muted-foreground">Name</dt>
               <dd className="font-medium">{user?.fullName ?? "—"}</dd>
@@ -74,6 +71,14 @@ export default function SettingsPage() {
               </dd>
             </div>
           </dl>
+          <div className="flex justify-end">
+            <Link
+              href="/settings/account"
+              className="inline-flex items-center justify-center gap-2 font-medium transition-all px-3 py-1.5 text-small rounded-sm bg-card text-foreground border border-border hover:bg-muted"
+            >
+              Manage account
+            </Link>
+          </div>
         </CardContent>
       </Card>
 
@@ -84,25 +89,35 @@ export default function SettingsPage() {
         <>
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Plan</CardTitle>
-                <SubscriptionBadge tier={subscription.tier} />
-              </div>
-              <CardDescription>
-                {isSubscribed
-                  ? `${subscription.tier} · ${subscription.plan} billing`
-                  : "You are on the free plan."}
-              </CardDescription>
+              <CardTitle>Plan</CardTitle>
             </CardHeader>
-            {isSubscribed && (
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  {subscription.subscriptionEndsAt && (
-                    <p className="text-small text-muted-foreground">
-                      {subscription.status === "cancelled" ? "Cancels" : "Renews"}{" "}
-                      {formatDate(subscription.subscriptionEndsAt)}
-                    </p>
-                  )}
+            <CardContent>
+              <dl className="space-y-3 mb-4 border-b border-border pb-4">
+                <div className="flex justify-between text-small">
+                  <dt className="text-muted-foreground">Status</dt>
+                  <dd className="font-medium capitalize">{subscription.status}</dd>
+                </div>
+                <div className="flex justify-between text-small">
+                  <dt className="text-muted-foreground">Tier</dt>
+                  <dd className="font-medium capitalize">{subscription.tier}</dd>
+                </div>
+                {isSubscribed && subscription.plan && (
+                  <div className="flex justify-between text-small">
+                    <dt className="text-muted-foreground">Billing</dt>
+                    <dd className="font-medium capitalize">{subscription.plan}</dd>
+                  </div>
+                )}
+                {isSubscribed && subscription.subscriptionEndsAt && (
+                  <div className="flex justify-between text-small">
+                    <dt className="text-muted-foreground">
+                      {subscription.status === "cancelled" ? "Cancels" : "Renews"}
+                    </dt>
+                    <dd className="font-medium">{formatDate(subscription.subscriptionEndsAt)}</dd>
+                  </div>
+                )}
+              </dl>
+              {isSubscribed && (
+                <div className="flex justify-end">
                   <Button
                     variant="secondary"
                     size="sm"
@@ -112,8 +127,8 @@ export default function SettingsPage() {
                     Manage billing
                   </Button>
                 </div>
-              </CardContent>
-            )}
+              )}
+            </CardContent>
           </Card>
 
           {!isSubscribed && (
