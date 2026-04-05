@@ -61,7 +61,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     loading: accessData === undefined,
   };
 
-  const isLoading = userRecord === undefined || accessData === undefined;
+  // Both queries return null (not undefined) when the Convex WebSocket connects before
+  // the Clerk JWT is delivered — !identity in the handler returns null immediately.
+  // null !== undefined so the undefined checks don't catch it. Since null accessData
+  // is always transient on an authenticated page, treat it as loading.
+  const isLoading =
+    userRecord === undefined ||
+    accessData === undefined ||
+    accessData === null;
 
   return (
     <AppStateContext.Provider value={{ userRecord, subscription, isLoading }}>

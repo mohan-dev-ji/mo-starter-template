@@ -2,11 +2,10 @@ import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 import { AppStateProvider } from "@/app/components/AppStateProvider";
 import { ThemeToggle } from "@/app/components/shared/ui/ThemeToggle";
-import { LayoutDashboard, CreditCard, Settings } from "lucide-react";
+import { LayoutDashboard, Settings } from "lucide-react";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/billing", label: "Billing", icon: CreditCard },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

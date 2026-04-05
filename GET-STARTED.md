@@ -116,6 +116,8 @@ Copy the **webhook signing secret** (starts with `whsec_`) → `STRIPE_WEBHOOK_S
 
 Leave this running alongside `npx convex dev`.
 
+> **Gotcha:** Changes to API route files (e.g. `app/api/stripe/webhook/route.ts`) are not always picked up by Turbopack's hot reload. If webhook behaviour seems stale, restart `pnpm dev`.
+
 **For production:** In Stripe Dashboard → Webhooks → Add endpoint
 - URL: `https://yourdomain.com/api/stripe/webhook`
 - Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`

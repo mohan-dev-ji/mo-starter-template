@@ -85,9 +85,9 @@ export async function POST(request: Request) {
         if (!user) break;
 
         const priceId = subscription.items.data[0]?.price.id ?? "";
-        const status = subscription.status === "active" ? "active"
+        const status = subscription.cancel_at_period_end ? "cancelled"
+          : subscription.status === "active" ? "active"
           : subscription.status === "past_due" ? "past_due"
-          : subscription.cancel_at_period_end ? "cancelled"
           : "active";
 
         await convex.mutation(api.users.updateSubscription, {
@@ -95,8 +95,8 @@ export async function POST(request: Request) {
           tier: tierFromPriceId(priceId),
           status,
           plan: planFromPriceId(priceId),
-          subscriptionEndsAt: subscription.cancel_at_period_end && subscription.cancel_at
-            ? subscription.cancel_at * 1000
+          subscriptionEndsAt: subscription.cancel_at_period_end
+            ? (subscription.cancel_at ?? subscription.items.data[0]?.current_period_end ?? 0) * 1000
             : null,
         });
         break;
