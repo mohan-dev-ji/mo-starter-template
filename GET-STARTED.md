@@ -82,6 +82,13 @@ This will:
 npx convex env set CLERK_JWT_ISSUER_DOMAIN https://your-issuer.clerk.accounts.dev
 ```
 
+**Create a deploy key:**
+
+The deploy key lets server-side API routes (account deletion, webhooks) query Convex without a user JWT.
+
+1. Convex Dashboard → your project → **Settings** → **Deploy Key**
+2. Copy the key → `CONVEX_DEPLOY_KEY` in `.env.local`
+
 Leave `npx convex dev` running in a terminal throughout development.
 
 ---

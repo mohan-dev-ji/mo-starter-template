@@ -128,10 +128,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {!isSubscribed && (
+              {!isSubscribed && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-subheading">Upgrade your plan</h2>
@@ -170,6 +167,10 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+            </CardContent>
+          </Card>
+
+          
         </>
       )}
 

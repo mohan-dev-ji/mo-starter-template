@@ -16,14 +16,14 @@ export function PricingToggle({ value, onChange }: PricingToggleProps) {
       <button
         onClick={() => onChange(value === "monthly" ? "yearly" : "monthly")}
         className={cn(
-          "relative w-12 h-6 rounded-full transition-colors",
+          "relative w-12 h-6 rounded-full transition-colors overflow-hidden",
           value === "yearly" ? "bg-primary" : "bg-border"
         )}
         aria-label="Toggle billing period"
       >
         <span
           className={cn(
-            "absolute top-1 w-4 h-4 rounded-full bg-white transition-transform",
+            "absolute left-0 top-1 w-4 h-4 rounded-full bg-white transition-transform",
             value === "yearly" ? "translate-x-7" : "translate-x-1"
           )}
         />
