@@ -37,7 +37,7 @@ const tiers = [
     highlighted: true,
   },
   {
-    name: "Business",
+    name: "Max",
     description: "For growing teams that need more.",
     price: { monthly: "$39", yearly: "$312" },
     features: [
@@ -47,20 +47,20 @@ const tiers = [
       "Custom integrations",
       "SLA guarantee",
     ],
-    cta: "Start Business",
+    cta: "Start Max",
     ctaHref: "/sign-up",
-    tier: "business",
+    tier: "max",
   },
 ];
 
 const featureComparison = [
-  { feature: "Core features", free: true, pro: true, business: true },
-  { feature: "Unlimited [units]", free: false, pro: true, business: true },
-  { feature: "Advanced analytics", free: false, pro: true, business: true },
-  { feature: "Priority support", free: false, pro: true, business: true },
-  { feature: "Unlimited users", free: false, pro: false, business: true },
-  { feature: "Custom integrations", free: false, pro: false, business: true },
-  { feature: "SLA guarantee", free: false, pro: false, business: true },
+  { feature: "Core features", free: true, pro: true, max: true },
+  { feature: "Unlimited [units]", free: false, pro: true, max: true },
+  { feature: "Advanced analytics", free: false, pro: true, max: true },
+  { feature: "Priority support", free: false, pro: true, max: true },
+  { feature: "Unlimited users", free: false, pro: false, max: true },
+  { feature: "Custom integrations", free: false, pro: false, max: true },
+  { feature: "SLA guarantee", free: false, pro: false, max: true },
 ];
 
 export default function PricingPage() {
@@ -102,14 +102,14 @@ export default function PricingPage() {
                   <th className="text-left p-4 font-medium">Feature</th>
                   <th className="text-center p-4 font-medium">Free</th>
                   <th className="text-center p-4 font-medium text-primary">Pro</th>
-                  <th className="text-center p-4 font-medium">Business</th>
+                  <th className="text-center p-4 font-medium">Max</th>
                 </tr>
               </thead>
               <tbody>
                 {featureComparison.map((row, i) => (
                   <tr key={row.feature} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
                     <td className="p-4 text-foreground">{row.feature}</td>
-                    {(["free", "pro", "business"] as const).map((t) => (
+                    {(["free", "pro", "max"] as const).map((t) => (
                       <td key={t} className="p-4 text-center">
                         {row[t] ? (
                           <Check className="w-4 h-4 text-success mx-auto" />

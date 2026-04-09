@@ -12,19 +12,126 @@ import { PricingToggle } from "@/app/components/marketing/ui/PricingToggle";
 import { Button } from "@/app/components/shared/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { Check } from "lucide-react";
+import type { SubscriptionTier, SubscriptionPlan } from "@/types";
 
-const plans = {
+const plans: Record<"pro" | "max", {
+  name: string;
+  price: { monthly: string; yearly: string };
+  features: string[];
+}> = {
   pro: {
     name: "Pro",
     price: { monthly: "$12", yearly: "$96" },
     features: ["Unlimited [units]", "All core features", "Priority support", "Up to 5 users"],
   },
-  business: {
-    name: "Business",
+  max: {
+    name: "Max",
     price: { monthly: "$39", yearly: "$312" },
     features: ["Everything in Pro", "Unlimited users", "Dedicated support", "Custom integrations"],
   },
 };
+
+function DowngradeButton() {
+  const [loading, setLoading] = useState(false);
+
+  const handleDowngrade = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/cancel-subscription", { method: "POST" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        console.error("Downgrade failed", err);
+      }
+    } catch (err) {
+      console.error("Downgrade error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button variant="secondary" size="sm" onClick={handleDowngrade} loading={loading} className="w-full">
+      Downgrade to free
+    </Button>
+  );
+}
+
+function PlanCTA({
+  targetTier,
+  billingPlan,
+  currentTier,
+  currentStatus,
+  currentPlan,
+  onPortal,
+  portalLoading,
+}: {
+  targetTier: "pro" | "max";
+  billingPlan: SubscriptionPlan;
+  currentTier: SubscriptionTier;
+  currentStatus: string;
+  currentPlan: SubscriptionPlan | null;
+  onPortal: () => void;
+  portalLoading: boolean;
+}) {
+  const [switchLoading, setSwitchLoading] = useState(false);
+
+  const handleSwitch = async () => {
+    setSwitchLoading(true);
+    try {
+      const res = await fetch("/api/stripe/switch-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier: targetTier, plan: billingPlan }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        console.error("Switch plan failed", err);
+      }
+    } catch (err) {
+      console.error("Switch plan error:", err);
+    } finally {
+      setSwitchLoading(false);
+    }
+  };
+
+  const isFreeUser = currentStatus === "free";
+  const isCurrentTier = currentTier === targetTier;
+  const isActive = currentStatus === "active";
+  const isCancelled = currentStatus === "cancelled";
+
+  if (isFreeUser) {
+    return <UpgradeButton tier={targetTier} plan={billingPlan} label={`Start ${plans[targetTier].name}`} />;
+  }
+
+  if (isCurrentTier && isActive) {
+    return (
+      <div className="space-y-2">
+        <Button variant="secondary" size="sm" disabled className="w-full cursor-default opacity-60">
+          Current plan
+        </Button>
+        {currentPlan && currentPlan !== billingPlan && (
+          <Button variant="secondary" size="sm" onClick={handleSwitch} loading={switchLoading} className="w-full">
+            Switch to {billingPlan}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  if (isCurrentTier && isCancelled) {
+    return (
+      <Button variant="secondary" size="sm" onClick={onPortal} loading={portalLoading} className="w-full">
+        Resubscribe
+      </Button>
+    );
+  }
+
+  return (
+    <Button size="sm" onClick={handleSwitch} loading={switchLoading} className="w-full">
+      Switch to {plans[targetTier].name}
+    </Button>
+  );
+}
 
 export default function SettingsPage() {
   const { user } = useUser();
@@ -45,6 +152,7 @@ export default function SettingsPage() {
   };
 
   const isSubscribed = subscription.status === "active" || subscription.status === "cancelled";
+  const planLabel = subscription.plan ? ` · ${subscription.plan}` : "";
 
   return (
     <div className="space-y-8">
@@ -82,96 +190,114 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Billing */}
+      {/* Plan */}
       {isLoading ? (
         <CardSkeleton />
       ) : (
-        <>
-          <Card>
-            <CardHeader>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
               <CardTitle>Plan</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <dl className="space-y-3 mb-4 border-b border-border pb-4">
+              <PricingToggle value={billingPlan} onChange={setBillingPlan} />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Current plan status — always shown */}
+            <dl className="space-y-3 mb-6 pb-6 border-b border-border">
+              <div className="flex justify-between text-small">
+                <dt className="text-muted-foreground">Current plan</dt>
+                <dd className="font-medium capitalize">{subscription.tier}{planLabel}</dd>
+              </div>
+              <div className="flex justify-between text-small">
+                <dt className="text-muted-foreground">Status</dt>
+                <dd className="font-medium capitalize">{subscription.status}</dd>
+              </div>
+              {subscription.status === "cancelled" && subscription.subscriptionEndsAt && (
                 <div className="flex justify-between text-small">
-                  <dt className="text-muted-foreground">Status</dt>
-                  <dd className="font-medium capitalize">{subscription.status}</dd>
+                  <dt className="text-muted-foreground">Access until</dt>
+                  <dd className="font-medium text-warning">{formatDate(subscription.subscriptionEndsAt)}</dd>
                 </div>
-                <div className="flex justify-between text-small">
-                  <dt className="text-muted-foreground">Tier</dt>
-                  <dd className="font-medium capitalize">{subscription.tier}</dd>
-                </div>
-                {isSubscribed && subscription.plan && (
-                  <div className="flex justify-between text-small">
-                    <dt className="text-muted-foreground">Billing</dt>
-                    <dd className="font-medium capitalize">{subscription.plan}</dd>
-                  </div>
-                )}
-                {isSubscribed && subscription.subscriptionEndsAt && (
-                  <div className="flex justify-between text-small">
-                    <dt className="text-muted-foreground">
-                      {subscription.status === "cancelled" ? "Cancels" : "Renews"}
-                    </dt>
-                    <dd className="font-medium">{formatDate(subscription.subscriptionEndsAt)}</dd>
-                  </div>
-                )}
-              </dl>
+              )}
               {isSubscribed && (
                 <div className="flex justify-end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    loading={portalLoading}
-                    onClick={handlePortal}
-                  >
+                  <Button variant="secondary" size="sm" loading={portalLoading} onClick={handlePortal}>
                     Manage billing
                   </Button>
                 </div>
               )}
-              {!isSubscribed && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-subheading">Upgrade your plan</h2>
-                <PricingToggle value={billingPlan} onChange={setBillingPlan} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(["pro", "business"] as const).map((tier) => {
-                  const p = plans[tier];
-                  return (
-                    <Card key={tier}>
-                      <CardHeader>
-                        <CardTitle>{p.name}</CardTitle>
-                        <CardDescription>
-                          <span className="text-heading font-bold text-foreground">
-                            {billingPlan === "monthly" ? p.price.monthly : p.price.yearly}
-                          </span>
-                          <span className="text-muted-foreground text-small ml-1">
-                            / {billingPlan === "monthly" ? "month" : "year"}
-                          </span>
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <ul className="space-y-2 mb-6">
-                          {p.features.map((f) => (
-                            <li key={f} className="flex items-center gap-2 text-small">
-                              <Check className="w-4 h-4 text-success shrink-0" />
-                              {f}
-                            </li>
-                          ))}
-                        </ul>
-                        <UpgradeButton tier={tier} plan={billingPlan} label={`Upgrade to ${p.name}`} />
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-            </CardContent>
-          </Card>
+            </dl>
 
-          
-        </>
+            {/* Plan cards — always shown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Free plan */}
+              <Card className={subscription.tier === "free" ? "ring-1 ring-primary" : ""}>
+                <CardHeader>
+                  <CardTitle>Free</CardTitle>
+                  <CardDescription>
+                    <span className="text-heading font-bold text-foreground">$0</span>
+                    <span className="text-muted-foreground text-small ml-1">/ forever</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {["Up to 100 [units] per month", "Core features", "Community support", "1 user"].map((f) => (
+                      <li key={f} className="flex items-center gap-2 text-small">
+                        <Check className="w-4 h-4 text-success shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  {subscription.tier === "free" ? (
+                    <Button variant="secondary" size="sm" disabled className="w-full cursor-default opacity-60">
+                      Current plan
+                    </Button>
+                  ) : isSubscribed ? (
+                    <DowngradeButton />
+                  ) : null}
+                </CardContent>
+              </Card>
+
+              {(["pro", "max"] as const).map((tier) => {
+                const p = plans[tier];
+                const isCurrentTier = subscription.tier === tier;
+                return (
+                  <Card key={tier} className={isCurrentTier && isSubscribed ? "ring-1 ring-primary" : ""}>
+                    <CardHeader>
+                      <CardTitle>{p.name}</CardTitle>
+                      <CardDescription>
+                        <span className="text-heading font-bold text-foreground">
+                          {billingPlan === "monthly" ? p.price.monthly : p.price.yearly}
+                        </span>
+                        <span className="text-muted-foreground text-small ml-1">
+                          / {billingPlan === "monthly" ? "month" : "year"}
+                        </span>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2 mb-6">
+                        {p.features.map((f) => (
+                          <li key={f} className="flex items-center gap-2 text-small">
+                            <Check className="w-4 h-4 text-success shrink-0" />
+                            {f}
+                          </li>
+                        ))}
+                      </ul>
+                      <PlanCTA
+                        targetTier={tier}
+                        billingPlan={billingPlan}
+                        currentTier={subscription.tier}
+                        currentStatus={subscription.status}
+                        currentPlan={subscription.plan}
+                        onPortal={handlePortal}
+                        portalLoading={portalLoading}
+                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Appearance */}

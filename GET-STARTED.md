@@ -103,8 +103,8 @@ Create these products (or adapt to your pricing):
 |---|---|---|---|
 | Pro | e.g. $12/mo | Monthly recurring | `STRIPE_PRO_MONTHLY_PRICE_ID` |
 | Pro | e.g. $99/yr | Yearly recurring | `STRIPE_PRO_YEARLY_PRICE_ID` |
-| Business | e.g. $49/mo | Monthly recurring | `STRIPE_BUSINESS_MONTHLY_PRICE_ID` |
-| Business | e.g. $399/yr | Yearly recurring | `STRIPE_BUSINESS_YEARLY_PRICE_ID` |
+| Max | e.g. $49/mo | Monthly recurring | `STRIPE_MAX_MONTHLY_PRICE_ID` |
+| Max | e.g. $399/yr | Yearly recurring | `STRIPE_MAX_YEARLY_PRICE_ID` |
 
 Copy each **Price ID** (starts with `price_`) → `.env.local`
 
@@ -115,15 +115,33 @@ Copy each **Price ID** (starts with `price_`) → `.env.local`
 
 ## Step 5 — Stripe webhook (local dev)
 
+**Authenticate the Stripe CLI to your account first:**
+
+```bash
+stripe login
+```
+
+Follow the browser prompt. Select account for this project. When complete, verify you're on the correct account:
+
+```bash
+stripe whoami
+```
+
+The account name should match the Stripe account your API keys belong to. If it shows a different account, you'll receive events from the wrong project and webhooks will never fire.
+
 ```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-Copy the **webhook signing secret** (starts with `whsec_`) → `STRIPE_WEBHOOK_SECRET`
+Copy the **webhook signing secret** it outputs (starts with `whsec_`) → `STRIPE_WEBHOOK_SECRET` in `.env.local`, then restart `pnpm dev`.
 
-Leave this running alongside `npx convex dev`.
+Leave `stripe listen` running alongside `npx convex dev`.
 
-> **Gotcha:** Changes to API route files (e.g. `app/api/stripe/webhook/route.ts`) are not always picked up by Turbopack's hot reload. If webhook behaviour seems stale, restart `pnpm dev`.
+> **Gotcha — wrong account:** If you have multiple Stripe accounts, the CLI may default to a different one than your API keys belong to. Always run `stripe whoami` after `stripe login` to confirm. Events from the wrong account are silently ignored and webhooks will never update your database.
+
+> **Gotcha — whsec_ changes each session:** The webhook signing secret is generated fresh each time you run `stripe listen`. If you restart it, copy the new `whsec_` and update `.env.local`, then restart `pnpm dev`.
+
+> **Gotcha — hot reload:** Changes to API route files (e.g. `app/api/stripe/webhook/route.ts`) are not always picked up by Turbopack's hot reload. If webhook behaviour seems stale, restart `pnpm dev`.
 
 **For production:** In Stripe Dashboard → Webhooks → Add endpoint
 - URL: `https://yourdomain.com/api/stripe/webhook`
@@ -183,7 +201,7 @@ Visit `http://localhost:3000`. Sign up → check Convex dashboard → user shoul
 2. Use Stripe test card: `4242 4242 4242 4242`, any future date, any CVC
 3. Complete checkout → you should be redirected to `/dashboard`
 4. Stripe webhook fires → Convex user subscription updates in real time
-5. `/dashboard` subscription card should now show Pro or Business
+5. `/dashboard` subscription card should now show Pro or Max
 
 ---
 

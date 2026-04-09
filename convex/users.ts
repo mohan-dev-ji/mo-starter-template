@@ -166,7 +166,7 @@ export const getUserByStripeCustomerId = query({
 export const updateSubscription = mutation({
   args: {
     userId: v.id("users"),
-    tier: v.union(v.literal("free"), v.literal("pro"), v.literal("business")),
+    tier: v.union(v.literal("free"), v.literal("pro"), v.literal("max")),
     status: v.union(
       v.literal("free"),
       v.literal("active"),
@@ -179,15 +179,34 @@ export const updateSubscription = mutation({
     subscriptionEndsAt: v.optional(v.union(v.number(), v.null())),
   },
   handler: async (ctx, args) => {
-    const { userId, ...subscriptionData } = args;
+    const { userId, tier, status, plan, stripeCustomerId, stripeSubscriptionId, subscriptionEndsAt } = args;
     const user = await ctx.db.get(userId);
     if (!user) throw new Error("User not found");
 
+    const existing = user.subscription;
+
+    // When downgrading to free, build a clean object — don't preserve plan or
+    // subscriptionEndsAt from the existing record.
+    const subscription =
+      status === "free"
+        ? {
+            tier: "free" as const,
+            status: "free" as const,
+            ...(existing.stripeCustomerId && { stripeCustomerId: existing.stripeCustomerId }),
+            ...(existing.stripeSubscriptionId && { stripeSubscriptionId: existing.stripeSubscriptionId }),
+          }
+        : {
+            ...existing,
+            tier,
+            status,
+            ...(plan !== undefined && { plan }),
+            ...(stripeCustomerId !== undefined && { stripeCustomerId }),
+            ...(stripeSubscriptionId !== undefined && { stripeSubscriptionId }),
+            ...(subscriptionEndsAt !== undefined && { subscriptionEndsAt: subscriptionEndsAt ?? undefined }),
+          };
+
     await ctx.db.patch(userId, {
-      subscription: {
-        ...user.subscription,
-        ...subscriptionData,
-      },
+      subscription: subscription as typeof existing,
       lastActiveAt: Date.now(),
     });
   },

@@ -8,7 +8,7 @@ A production-ready SaaS starter template. Clone it, fill in env vars, and ship.
 
 **Database** — Convex with a `users` table, subscription tracking, and 8 pre-built queries/mutations. Real-time by default via WebSocket.
 
-**Payments** — Full Stripe integration: checkout sessions (monthly + yearly), customer portal, idempotent webhook handler for `customer.subscription.*` events. Three tiers: Free, Pro, Business.
+**Payments** — Full Stripe integration: checkout sessions (monthly + yearly), customer portal, idempotent webhook handler for `customer.subscription.*` events. Three tiers: Free, Pro, Max.
 
 **Storage** — Cloudflare R2 helpers for private asset delivery via authenticated 302 redirect. Optional — the app works without it.
 

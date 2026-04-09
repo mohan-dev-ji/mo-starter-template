@@ -9,18 +9,18 @@ export const dynamic = "force-dynamic";
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 // Map Stripe price ID to subscription tier
-function tierFromPriceId(priceId: string): "pro" | "business" {
+function tierFromPriceId(priceId: string): "pro" | "max" {
   const proIds = [
     process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
     process.env.STRIPE_PRO_YEARLY_PRICE_ID,
   ];
-  return proIds.includes(priceId) ? "pro" : "business";
+  return proIds.includes(priceId) ? "pro" : "max";
 }
 
 function planFromPriceId(priceId: string): "monthly" | "yearly" {
   const monthlyIds = [
     process.env.STRIPE_PRO_MONTHLY_PRICE_ID,
-    process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID,
+    process.env.STRIPE_MAX_MONTHLY_PRICE_ID,
   ];
   return monthlyIds.includes(priceId) ? "monthly" : "yearly";
 }

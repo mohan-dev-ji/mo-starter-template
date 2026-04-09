@@ -45,9 +45,9 @@ Critical: `CLERK_JWT_ISSUER_DOMAIN` must match the Clerk environment (dev vs pro
 - `ctx.auth.getUserIdentity()` in Convex queries — `identity.subject` is the Clerk user ID
 
 ## Subscription Model
-Three tiers: free / pro / business. No trial.
+Three tiers: free / pro / max. No trial.
 - `free` status + `free` tier = free plan user
-- `active` status + `pro`/`business` tier = paying subscriber
+- `active` status + `pro`/`max` tier = paying subscriber
 - `cancelled` status = retain access until `subscriptionEndsAt`
 - `past_due` status = access suspended
 
